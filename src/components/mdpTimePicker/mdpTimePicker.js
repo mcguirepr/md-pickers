@@ -118,7 +118,9 @@ function ClockCtrl($scope) {
 
     this.setTime = function(time, type) {
         this.selected = time;
-
+        if(!moment(self.time).isValid()){
+           self.time = moment();
+        }
         switch(self.type) {
             case TYPE_HOURS:
                 if(self.ampm && self.time.format("A") == "PM") time += 12;
@@ -167,7 +169,9 @@ module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeou
             scope.$watch(function () {
                 return ctrl.time;
             }, function (newValue) {
-                ctrl.$onInit();
+                if(moment(newValue).isValid()){
+                    ctrl.$onInit();
+                }
             }, true);
 
             var onEvent = function(event) {
