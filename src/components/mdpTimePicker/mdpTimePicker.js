@@ -122,6 +122,9 @@ function ClockCtrl($scope) {
         switch(self.type) {
             case TYPE_HOURS:
                 if(self.ampm && self.time.format("A") == "PM") time += 12;
+                if(!self.ampm && time == 24){
+                    time = 0;
+                }
                 this.time.hours(time);
                 break;
             case TYPE_MINUTES:
@@ -136,6 +139,7 @@ function ClockCtrl($scope) {
 module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeout) {
     return {
         restrict: 'E',
+        scope: true,
         bindToController: {
             'type': '@?',
             'time': '=',
@@ -159,6 +163,12 @@ module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeou
 				timepickerCtrl = scope.$parent.timepicker;
 				
             scope.raised = false;
+
+            scope.$watch(function () {
+                return ctrl.time;
+            }, function (newValue) {
+                ctrl.$onInit();
+            }, true);
 
             var onEvent = function(event) {
                 var containerCoords = event.currentTarget.getClientRects()[0];
@@ -292,12 +302,15 @@ module.directive("mdpTimePicker", ["$mdpTimePicker", "$timeout", "$mdpLocale", f
         transclude: true,
         template: function(element, attrs) {
             var noFloat = angular.isDefined(attrs.mdpNoFloat) || $mdpLocale.time.noFloat,
-                openOnClick = angular.isDefined(attrs.mdpOpenOnClick) || $mdpLocale.time.openOnClick;
+                openOnClick = angular.isDefined(attrs.mdpOpenOnClick) || $mdpLocale.time.openOnClick,
+                hideButton = angular.isDefined(attrs.mdpHideButton);
+
+            var mdButton = hideButton ? '' : '<md-button class="md-icon-button" ng-click="showPicker($event)"' + (angular.isDefined(attrs.mdpDisabled) ? ' ng-disabled="disabled"' : '') + '>' +
+                '<md-icon md-svg-icon="mdp-access-time"></md-icon>' +
+                '</md-button>';
 
             return '<div layout layout-align="start start">' +
-                    '<md-button class="md-icon-button" ng-click="showPicker($event)"' + (angular.isDefined(attrs.mdpDisabled) ? ' ng-disabled="disabled"' : '') + '>' +
-                        '<md-icon md-svg-icon="mdp-access-time"></md-icon>' +
-                    '</md-button>' +
+                    mdButton +
                     '<md-input-container' + (noFloat ? ' md-no-float' : '') + ' md-is-error="isError()">' +
                         '<input name="{{ inputName }}" ng-model="model.$viewValue" ng-required="required()" type="{{ ::type }}"' + (angular.isDefined(attrs.mdpDisabled) ? ' ng-disabled="disabled"' : '') + ' aria-label="{{placeholder}}" placeholder="{{placeholder}}"' + (openOnClick ? ' ng-click="showPicker($event)" ' : '') + ' />' +
                     '</md-input-container>' +
@@ -314,7 +327,8 @@ module.directive("mdpTimePicker", ["$mdpTimePicker", "$timeout", "$mdpLocale", f
             "disabled": "=?mdpDisabled",
             "ampm": "=?mdpAmpm",
             "inputName": "@?mdpInputName",
-            "clearOnCancel": "=?mdpClearOnCancel"
+            "clearOnCancel": "=?mdpClearOnCancel",
+            "hideButton": "=?mdpHideButton"
         },
         link: function(scope, element, attrs, controllers, $transclude) {
             var ngModel = controllers[0];

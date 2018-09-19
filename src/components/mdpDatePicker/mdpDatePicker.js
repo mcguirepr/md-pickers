@@ -248,6 +248,7 @@ function CalendarCtrl($scope) {
 module.directive("mdpCalendar", ["$animate", function($animate) {
     return {
         restrict: 'E',
+        scope: true,
         bindToController: {
             "date": "=",
             "minDate": "=",
@@ -349,12 +350,16 @@ module.directive("mdpDatePicker", ["$mdpDatePicker", "$timeout", "$mdpLocale", f
         transclude: true,
         template: function(element, attrs) {
             var noFloat = angular.isDefined(attrs.mdpNoFloat) || $mdpLocale.date.noFloat,
-                openOnClick = angular.isDefined(attrs.mdpOpenOnClick) || $mdpLocale.date.openOnClick;
-
-            return '<div layout layout-align="start start">' +
-                    '<md-button' + (angular.isDefined(attrs.mdpDisabled) ? ' ng-disabled="disabled"' : '') + ' class="md-icon-button" ng-click="showPicker($event)">' +
-                        '<md-icon md-svg-icon="mdp-event"></md-icon>' +
-                    '</md-button>' +
+                openOnClick = angular.isDefined(attrs.mdpOpenOnClick) || $mdpLocale.date.openOnClick,
+                hideButton = angular.isDefined(attrs.mdpHideButton);
+                
+            var mdButton = hideButton ? '' : '<md-button' + (angular.isDefined(attrs.mdpDisabled) ? ' ng-disabled="disabled"' : '') + ' class="md-icon-button" ng-click="showPicker($event)">' +
+                '<md-icon md-svg-icon="mdp-event"></md-icon>' +
+                '</md-button>';
+            
+            
+                return '<div layout layout-align="start start">' +
+                     mdButton + 
                     '<md-input-container' + (noFloat ? ' md-no-float' : '') + ' md-is-error="isError()">' +
                         '<input name="{{ inputName }}" ng-model="model.$viewValue" ng-required="required()" type="{{ ::type }}"' + (angular.isDefined(attrs.mdpDisabled) ? ' ng-disabled="disabled"' : '') + ' aria-label="{{placeholder}}" placeholder="{{placeholder}}"' + (openOnClick ? ' ng-click="showPicker($event)" ' : '') + ' />' +
                     '</md-input-container>' +
@@ -372,7 +377,8 @@ module.directive("mdpDatePicker", ["$mdpDatePicker", "$timeout", "$mdpLocale", f
             "openOnClick": "=mdpOpenOnClick",
             "disabled": "=?mdpDisabled",
             "inputName": "@?mdpInputName",
-            "clearOnCancel": "=?mdpClearOnCancel"
+            "clearOnCancel": "=?mdpClearOnCancel",
+            "hideButton": "=?mdpHideButton"
         },
         link: {
             pre: function(scope, element, attrs, constollers, $transclude) {
