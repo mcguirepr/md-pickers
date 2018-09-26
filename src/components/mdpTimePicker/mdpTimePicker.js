@@ -118,9 +118,11 @@ function ClockCtrl($scope) {
 
     this.setTime = function(time, type) {
         this.selected = time;
+
         if(!moment(self.time).isValid()){
            self.time = moment();
         }
+        var oldValue = moment(self.time);
         switch(self.type) {
             case TYPE_HOURS:
                 if(self.ampm && self.time.format("A") == "PM") time += 12;
@@ -134,7 +136,10 @@ function ClockCtrl($scope) {
                 this.time.minutes(time);
                 break;
         }
-
+        var newValue = moment(self.time);
+        if(this.onChange && !newValue.isSame(oldValue)){
+            this.onChange()(newValue, oldValue);
+        }
     };
 }
 
@@ -146,7 +151,8 @@ module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeou
             'type': '@?',
             'time': '=',
             'autoSwitch': '=?',
-            'ampm': '=?'
+            'ampm': '=?',
+            'onChange': '&?'
         },
         replace: true,
         template: '<md-card class="mdp-clock">' +
@@ -168,7 +174,7 @@ module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeou
 
             scope.$watch(function () {
                 return ctrl.time;
-            }, function (newValue) {
+            }, function (newValue, oldValue) {
                 if(moment(newValue).isValid()){
                     ctrl.$onInit();
                 }
