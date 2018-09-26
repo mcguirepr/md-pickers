@@ -180,16 +180,27 @@ module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeou
                 }
             }, true);
 
-            var onEvent = function(event) {
-                var containerCoords = event.currentTarget.getClientRects()[0];
-                var x = ((event.currentTarget.offsetWidth / 2) - (event.pageX - containerCoords.left)),
-                    y = ((event.pageY - containerCoords.top) - (event.currentTarget.offsetHeight / 2));
+            var checkIfEnter = function(event){
+                return  event.offsetX === 0 &&
+                        event.offsetY === 0 &&
+                        event.pageX === 0 &&
+                        event.pageY === 0 &&
+                        event.x === 0 &&
+                        event.y === 0;
+            }
 
-                var deg = Math.round((Math.atan2(x, y) * (180 / Math.PI)));
-                $timeout(function() {
-                    ctrl.setTimeByDeg(deg + 180);
-                    if(ctrl.autoSwitch && ["mouseup", "click"].indexOf(event.type) !== -1 && timepickerCtrl) timepickerCtrl.switchView();
-                });
+            var onEvent = function(event) {
+                if (!checkIfEnter(event)) {
+                    var containerCoords = event.currentTarget.getClientRects()[0];
+                    var x = ((event.currentTarget.offsetWidth / 2) - (event.pageX - containerCoords.left)),
+                        y = ((event.pageY - containerCoords.top) - (event.currentTarget.offsetHeight / 2));
+
+                    var deg = Math.round((Math.atan2(x, y) * (180 / Math.PI)));
+                    $timeout(function() {
+                        ctrl.setTimeByDeg(deg + 180);
+                        if(ctrl.autoSwitch && ["mouseup", "click"].indexOf(event.type) !== -1 && timepickerCtrl) timepickerCtrl.switchView();
+                    });
+                }
             };
 
             element.on("mousedown", function() {
